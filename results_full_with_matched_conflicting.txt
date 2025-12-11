@@ -1,0 +1,91 @@
+q10.sql
+	JOIN_ORDER(orders lineitem customer nation) /* matched, conflicting, failed */
+	NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+	HASH_JOIN(customer) /* matched, conflicting */
+	HASH_JOIN(nation) /* matched, conflicting */
+q11.sql
+	JOIN_ORDER(supplier nation partsupp) /* matched, conflicting */
+	JOIN_ORDER(supplier@expr_1 nation@expr_1 partsupp@expr_1) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(partsupp) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(partsupp@expr_1) /* matched, conflicting */
+	HASH_JOIN(nation) /* matched, conflicting */
+	HASH_JOIN(nation@expr_1) /* matched, conflicting */
+q12.sql
+q13.sql
+	NO_GATHER(c_orders) /* not matched */
+q14.sql
+q15.sql
+	NO_GATHER(revenue0@expr_1) /* not matched */
+q16.sql
+q17.sql
+q18.sql
+	JOIN_ORDER(customer (orders unnamed_subquery) lineitem) /* matched, conflicting */
+	MERGE_JOIN_MATERIALIZE(unnamed_subquery) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+	HASH_JOIN(unnamed_subquery) /* matched, conflicting */
+q19.sql
+q1.sql
+q20.sql
+	JOIN_ORDER(nation (supplier (part partsupp))) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(partsupp) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(partsupp) /* matched, conflicting */
+	NESTED_LOOP_MATERIALIZE(partsupp) /* matched, conflicting, failed */
+	SEMIJOIN_NON_UNIQUE((partsupp part)) /* matched, inapplicable, conflicting */
+q21.sql
+	JOIN_ORDER(l1 (supplier nation) l3 l2 orders) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(l3) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(l2) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(orders) /* matched, conflicting */
+	HASH_JOIN(nation) /* matched, conflicting */
+	HASH_JOIN(nation) /* matched, conflicting */
+	SEMIJOIN_NON_UNIQUE(l2) /* matched, conflicting */
+	GATHER((supplier l1 nation l3)) /* matched, conflicting */
+	NO_GATHER(l3) /* matched, conflicting */
+q22.sql
+q2.sql
+	JOIN_ORDER(part (supplier (nation region) partsupp)) /* matched, conflicting */
+	JOIN_ORDER(region@expr_1 (partsupp@expr_1 supplier@expr_1 nation@expr_1)) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(partsupp) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(supplier@expr_1) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(nation@expr_1) /* matched, conflicting */
+	NESTED_LOOP_PLAIN((supplier@expr_1 nation@expr_1)) /* matched, conflicting */
+	HASH_JOIN(region) /* matched, conflicting */
+	HASH_JOIN(region) /* matched, conflicting */
+	HASH_JOIN((partsupp region)) /* partially matched, conflicting */
+q3.sql
+	JOIN_ORDER(orders customer lineitem) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+	HASH_JOIN(customer) /* matched, conflicting */
+q4.sql
+	SEMIJOIN_NON_UNIQUE(lineitem) /* matched, inapplicable */
+q5.sql
+	JOIN_ORDER(customer (nation region) orders lineitem supplier) /* matched, conflicting */
+	MERGE_JOIN_PLAIN(region) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(orders) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+	HASH_JOIN(region) /* matched, conflicting */
+	HASH_JOIN(supplier) /* matched, conflicting */
+q6.sql
+q7.sql
+	JOIN_ORDER(customer n2 orders lineitem (supplier n1)) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(orders) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+	HASH_JOIN(n2) /* matched, conflicting */
+	HASH_JOIN(n1) /* matched, conflicting */
+	HASH_JOIN(n1) /* matched, conflicting */
+q8.sql
+	JOIN_ORDER(customer (n1 region) orders lineitem part supplier n2) /* matched, conflicting */
+	MERGE_JOIN_PLAIN(region) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(orders) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(supplier) /* matched, conflicting */
+	HASH_JOIN(region) /* matched, conflicting */
+	HASH_JOIN(part) /* matched, conflicting */
+	HASH_JOIN(n2) /* matched, conflicting */
+q9.sql
+	JOIN_ORDER(partsupp (lineitem part) supplier orders nation) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(supplier) /* matched, conflicting */
+	NESTED_LOOP_PLAIN(orders) /* matched, conflicting */
+	HASH_JOIN(part) /* matched, conflicting */
+	HASH_JOIN(part) /* matched, conflicting */
+	HASH_JOIN(nation) /* matched, conflicting */

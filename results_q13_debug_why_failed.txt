@@ -1,0 +1,180 @@
+dbt3=# explain (plan_advice) SELECT
+    c_count,
+    count(*) AS custdist
+FROM (
+    SELECT
+        c_custkey,
+        count(o_orderkey) AS c_count
+    FROM
+        customer LEFT OUTER JOIN orders ON
+            c_custkey = o_custkey
+            AND o_comment NOT LIKE '%special%requests%'
+    GROUP BY
+        c_custkey
+    ) AS c_orders
+GROUP BY
+    c_count
+ORDER BY
+    custdist DESC,
+    c_count DESC;
+                                                      QUERY PLAN                                                       
+-----------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=35908.57..35909.07 rows=200 width=16)
+   Sort Key: (count(*)) DESC, (count(orders.o_orderkey)) DESC
+   ->  HashAggregate  (cost=35898.93..35900.93 rows=200 width=16)
+         Group Key: count(orders.o_orderkey)
+         ->  HashAggregate  (cost=33001.18..34160.28 rows=115910 width=12)
+               Group Key: customer.c_custkey
+               ->  Hash Right Join  (cost=4474.65..29342.88 rows=731660 width=12)
+                     Hash Cond: (orders.o_custkey = customer.c_custkey)
+                     ->  Seq Scan on orders  (cost=0.00..22947.55 rows=731660 width=12)
+                           Filter: ((o_comment)::text !~~ '%special%requests%'::text)
+                     ->  Hash  (cost=3025.78..3025.78 rows=115910 width=4)
+                           ->  Index Only Scan using pk_customer on customer  (cost=0.42..3025.78 rows=115910 width=4)
+ Generated Plan Advice:
+   JOIN_ORDER(orders@c_orders customer@c_orders)
+   HASH_JOIN(customer@c_orders)
+   SEQ_SCAN(orders@c_orders)
+   INDEX_ONLY_SCAN(customer@c_orders public.pk_customer)
+   NO_GATHER(c_orders customer@c_orders orders@c_orders)
+(18 rows)
+
+dbt3=# set pg_plan_advice.advice = 'JOIN_ORDER(orders@c_orders customer@c_orders)
+   HASH_JOIN(customer@c_orders)
+   SEQ_SCAN(orders@c_orders)
+   INDEX_ONLY_SCAN(customer@c_orders public.pk_customer)
+   NO_GATHER(c_orders customer@c_orders orders@c_orders)';
+SET
+dbt3=# explain (plan_advice) SELECT
+    c_count,                   
+    count(*) AS custdist
+FROM (                                                  
+    SELECT                                                
+        c_custkey,
+        count(o_orderkey) AS c_count
+    FROM
+        customer LEFT OUTER JOIN orders ON
+            c_custkey = o_custkey
+            AND o_comment NOT LIKE '%special%requests%'
+    GROUP BY
+        c_custkey
+    ) AS c_orders
+GROUP BY
+    c_count
+ORDER BY
+    custdist DESC,
+    c_count DESC;
+                                                      QUERY PLAN                                                       
+-----------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=35908.57..35909.07 rows=200 width=16)
+   Sort Key: (count(*)) DESC, (count(orders.o_orderkey)) DESC
+   ->  HashAggregate  (cost=35898.93..35900.93 rows=200 width=16)
+         Group Key: count(orders.o_orderkey)
+         ->  HashAggregate  (cost=33001.18..34160.28 rows=115910 width=12)
+               Group Key: customer.c_custkey
+               ->  Hash Right Join  (cost=4474.65..29342.88 rows=731660 width=12)
+                     Hash Cond: (orders.o_custkey = customer.c_custkey)
+                     ->  Seq Scan on orders  (cost=0.00..22947.55 rows=731660 width=12)
+                           Filter: ((o_comment)::text !~~ '%special%requests%'::text)
+                     ->  Hash  (cost=3025.78..3025.78 rows=115910 width=4)
+                           ->  Index Only Scan using pk_customer on customer  (cost=0.42..3025.78 rows=115910 width=4)
+ Supplied Plan Advice:
+   SEQ_SCAN(orders@c_orders) /* matched */
+   INDEX_ONLY_SCAN(customer@c_orders public.pk_customer) /* matched */
+   JOIN_ORDER(orders@c_orders customer@c_orders) /* matched */
+   HASH_JOIN(customer@c_orders) /* matched */
+   NO_GATHER(c_orders) /* not matched */
+   NO_GATHER(customer@c_orders) /* matched */
+   NO_GATHER(orders@c_orders) /* matched */
+ Generated Plan Advice:
+   JOIN_ORDER(orders@c_orders customer@c_orders)
+   HASH_JOIN(customer@c_orders)
+   SEQ_SCAN(orders@c_orders)
+   INDEX_ONLY_SCAN(customer@c_orders public.pk_customer)
+   NO_GATHER(c_orders customer@c_orders orders@c_orders)
+(26 rows)
+
+
+dbt3=# set pg_plan_advice.advice = 'JOIN_ORDER(orders@c_orders customer@c_orders)
+   HASH_JOIN(customer@c_orders)
+   SEQ_SCAN(orders@c_orders)
+   INDEX_ONLY_SCAN(customer@c_orders public.pk_customer)
+   NO_GATHER(c_orders customer@c_orders orders@c_orders)';
+SET
+dbt3=# explain (plan_advice, debug) SELECT
+    c_count,                   
+    count(*) AS custdist
+FROM (                                                  
+    SELECT                                                
+        c_custkey,
+        count(o_orderkey) AS c_count
+    FROM
+        customer LEFT OUTER JOIN orders ON
+            c_custkey = o_custkey
+            AND o_comment NOT LIKE '%special%requests%'
+    GROUP BY
+        c_custkey
+    ) AS c_orders
+GROUP BY
+    c_count
+ORDER BY
+    custdist DESC,
+    c_count DESC;
+                                                      QUERY PLAN                                                       
+-----------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=35908.57..35909.07 rows=200 width=16)
+   Sort Key: (count(*)) DESC, (count(orders.o_orderkey)) DESC
+   Disabled Nodes: 0
+   Parallel Safe: true
+   Plan Node ID: 0
+   ->  HashAggregate  (cost=35898.93..35900.93 rows=200 width=16)
+         Group Key: count(orders.o_orderkey)
+         Disabled Nodes: 0
+         Parallel Safe: true
+         Plan Node ID: 1
+         ->  HashAggregate  (cost=33001.18..34160.28 rows=115910 width=12)
+               Group Key: customer.c_custkey
+               Disabled Nodes: 0
+               Parallel Safe: true
+               Plan Node ID: 3
+               ->  Hash Right Join  (cost=4474.65..29342.88 rows=731660 width=12)
+                     Hash Cond: (orders.o_custkey = customer.c_custkey)
+                     Disabled Nodes: 0
+                     Parallel Safe: true
+                     Plan Node ID: 4
+                     ->  Seq Scan on orders  (cost=0.00..22947.55 rows=731660 width=12)
+                           Filter: ((o_comment)::text !~~ '%special%requests%'::text)
+                           Disabled Nodes: 0
+                           Parallel Safe: true
+                           Plan Node ID: 5
+                     ->  Hash  (cost=3025.78..3025.78 rows=115910 width=4)
+                           Disabled Nodes: 0
+                           Parallel Safe: true
+                           Plan Node ID: 6
+                           ->  Index Only Scan using pk_customer on customer  (cost=0.42..3025.78 rows=115910 width=4)
+                                 Disabled Nodes: 0
+                                 Parallel Safe: true
+                                 Plan Node ID: 7
+ Supplied Plan Advice:
+   SEQ_SCAN(orders@c_orders) /* matched */
+   INDEX_ONLY_SCAN(customer@c_orders public.pk_customer) /* matched */
+   JOIN_ORDER(orders@c_orders customer@c_orders) /* matched */
+   HASH_JOIN(customer@c_orders) /* matched */
+   NO_GATHER(c_orders) /* not matched */
+   NO_GATHER(customer@c_orders) /* matched */
+   NO_GATHER(orders@c_orders) /* matched */
+ Generated Plan Advice:
+   JOIN_ORDER(orders@c_orders customer@c_orders)
+   HASH_JOIN(customer@c_orders)
+   SEQ_SCAN(orders@c_orders)
+   INDEX_ONLY_SCAN(customer@c_orders public.pk_customer)
+   NO_GATHER(c_orders customer@c_orders orders@c_orders)
+ PlannedStmt:
+   Command Type: select
+   Flags: canSetTag
+   Subplans Needing Rewind: none
+   Relation OIDs: 16421 16434
+   Executor Parameter Types: none
+   Parse Location: 0 to end
+(54 rows)
+

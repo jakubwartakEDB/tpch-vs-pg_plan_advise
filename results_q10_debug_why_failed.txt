@@ -1,0 +1,304 @@
+dbt3=# set pg_plan_advice.advice='JOIN_ORDER(orders lineitem customer nation) HASH_JOIN(customer nation) NESTED_LOOP_PLAIN(lineitem)';
+SET
+dbt3=# explain (plan_advice) SELECT                                                                                                   
+    c_custkey,
+    c_name,
+    sum(l_extendedprice * (1 - l_discount)) AS revenue,
+    c_acctbal,
+    n_name,
+    c_address,
+    c_phone,
+    c_comment
+FROM
+    customer,
+    orders,
+    lineitem,
+    nation
+WHERE
+    c_custkey = o_custkey
+    AND l_orderkey = o_orderkey
+    AND o_orderdate >= DATE '1993-10-01'
+    AND o_orderdate < DATE '1993-10-01' + INTERVAL '3' MONTH
+    AND l_returnflag = 'R'
+    AND c_nationkey = n_nationkey
+GROUP BY
+    c_custkey,
+    c_name,
+    c_acctbal,
+    c_phone,
+    n_name,
+    c_address,
+    c_comment
+ORDER BY
+    revenue DESC;
+dbt3=# set pg_plan_advice.advice='JOIN_ORDER(orders lineitem customer nation) HASH_JOIN(customer nation) NESTED_LOOP_PLAIN(lineitem)';
+SET
+dbt3=# explain (plan_advice) SELECT                                                                                                   
+    c_custkey,
+    c_name,
+    sum(l_extendedprice * (1 - l_discount)) AS revenue,
+    c_acctbal,
+    n_name,
+    c_address,
+    c_phone,
+    c_comment
+FROM
+    customer,
+    orders,
+    lineitem,
+    nation
+WHERE
+    c_custkey = o_custkey
+    AND l_orderkey = o_orderkey
+    AND o_orderdate >= DATE '1993-10-01'
+    AND o_orderdate < DATE '1993-10-01' + INTERVAL '3' MONTH
+    AND l_returnflag = 'R'
+    AND c_nationkey = n_nationkey
+GROUP BY
+    c_custkey,
+    c_name,
+    c_acctbal,
+    c_phone,
+    n_name,
+    c_address,
+    c_comment
+ORDER BY
+    revenue DESC;
+                                                                            QUERY PLAN                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=140363.27..140470.11 rows=42738 width=202)
+   Sort Key: (sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)))) DESC
+   ->  GroupAggregate  (cost=126791.53..132837.52 rows=42738 width=202)
+         Group Key: customer.c_custkey, nation.n_name
+         ->  Gather Merge  (cost=126791.53..131769.07 rows=42738 width=182)
+               Workers Planned: 2
+               ->  Sort  (cost=125791.50..125836.02 rows=17808 width=182)
+                     Sort Key: customer.c_custkey, nation.n_name
+                     ->  Nested Loop  (cost=4344.09..124534.24 rows=17808 width=182)
+                           ->  Hash Join  (cost=4343.66..22646.48 rows=12475 width=178)
+                                 Hash Cond: (customer.c_nationkey = nation.n_nationkey)
+                                 ->  Parallel Hash Join  (cost=4342.10..22606.62 rows=12475 width=156)
+                                       Hash Cond: (orders.o_custkey = customer.c_custkey)
+                                       ->  Parallel Seq Scan on orders  (cost=0.00..18231.78 rows=12475 width=12)
+                                             Filter: ((o_orderdate >= '1993-10-01'::date) AND (o_orderdate < '1994-01-01 00:00:00'::timestamp without time zone))
+                                       ->  Parallel Hash  (cost=3489.82..3489.82 rows=68182 width=148)
+                                             ->  Parallel Seq Scan on customer  (cost=0.00..3489.82 rows=68182 width=148)
+                                 ->  Hash  (cost=1.25..1.25 rows=25 width=30)
+                                       ->  Seq Scan on nation  (cost=0.00..1.25 rows=25 width=30)
+                           ->  Index Scan using lineitem_l_orderkey_idx_l_returnflag on lineitem  (cost=0.43..8.14 rows=3 width=20)
+                                 Index Cond: (l_orderkey = orders.o_orderkey)
+ Supplied Plan Advice:
+   JOIN_ORDER(orders lineitem customer nation) /* matched, conflicting, failed */
+   HASH_JOIN(customer) /* matched, conflicting */
+   HASH_JOIN(nation) /* matched, conflicting */
+   NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+ Generated Plan Advice:
+   JOIN_ORDER(orders customer nation lineitem)
+   NESTED_LOOP_PLAIN(lineitem)
+   HASH_JOIN(customer nation)
+   SEQ_SCAN(orders customer nation)
+   INDEX_SCAN(lineitem public.lineitem_l_orderkey_idx_l_returnflag)
+   GATHER_MERGE((customer orders lineitem nation))
+(33 rows)
+
+dbt3=# set pg_plan_advice.advice='JOIN_ORDER(orders lineitem customer nation) HASH_JOIN(customer nation)';
+SET
+dbt3=# explain (plan_advice) SELECT                                                                       
+    c_custkey,
+    c_name,
+    sum(l_extendedprice * (1 - l_discount)) AS revenue,
+    c_acctbal,
+    n_name,
+    c_address,
+    c_phone,
+    c_comment
+FROM
+    customer,
+    orders,
+    lineitem,
+    nation
+WHERE
+    c_custkey = o_custkey
+    AND l_orderkey = o_orderkey
+    AND o_orderdate >= DATE '1993-10-01'
+    AND o_orderdate < DATE '1993-10-01' + INTERVAL '3' MONTH
+    AND l_returnflag = 'R'
+    AND c_nationkey = n_nationkey
+GROUP BY
+    c_custkey,
+    c_name,
+    c_acctbal,
+    c_phone,
+    n_name,
+    c_address,
+    c_comment
+ORDER BY
+    revenue DESC;
+                                                                            QUERY PLAN                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=140393.63..140500.48 rows=42738 width=202)
+   Sort Key: (sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)))) DESC
+   ->  GroupAggregate  (cost=126821.89..132867.89 rows=42738 width=202)
+         Group Key: customer.c_custkey, nation.n_name
+         ->  Gather Merge  (cost=126821.89..131799.44 rows=42738 width=182)
+               Workers Planned: 2
+               ->  Sort  (cost=125821.87..125866.39 rows=17808 width=182)
+                     Sort Key: customer.c_custkey, nation.n_name
+                     ->  Hash Join  (cost=4344.09..124564.60 rows=17808 width=182)
+                           Hash Cond: (customer.c_nationkey = nation.n_nationkey)
+                           ->  Parallel Hash Join  (cost=4342.53..124508.38 rows=17808 width=160)
+                                 Hash Cond: (orders.o_custkey = customer.c_custkey)
+                                 ->  Nested Loop  (cost=0.43..120119.53 rows=17808 width=16)
+                                       ->  Parallel Seq Scan on orders  (cost=0.00..18231.78 rows=12475 width=12)
+                                             Filter: ((o_orderdate >= '1993-10-01'::date) AND (o_orderdate < '1994-01-01 00:00:00'::timestamp without time zone))
+                                       ->  Index Scan using lineitem_l_orderkey_idx_l_returnflag on lineitem  (cost=0.43..8.14 rows=3 width=20)
+                                             Index Cond: (l_orderkey = orders.o_orderkey)
+                                 ->  Parallel Hash  (cost=3489.82..3489.82 rows=68182 width=148)
+                                       ->  Parallel Seq Scan on customer  (cost=0.00..3489.82 rows=68182 width=148)
+                           ->  Hash  (cost=1.25..1.25 rows=25 width=30)
+                                 ->  Seq Scan on nation  (cost=0.00..1.25 rows=25 width=30)
+ Supplied Plan Advice:
+   JOIN_ORDER(orders lineitem customer nation) /* matched, conflicting */
+   HASH_JOIN(customer) /* matched, conflicting */
+   HASH_JOIN(nation) /* matched, conflicting */
+ Generated Plan Advice:
+   JOIN_ORDER(orders lineitem customer nation)
+   NESTED_LOOP_PLAIN(lineitem)
+   HASH_JOIN(customer nation)
+   SEQ_SCAN(orders customer nation)
+   INDEX_SCAN(lineitem public.lineitem_l_orderkey_idx_l_returnflag)
+   GATHER_MERGE((customer orders lineitem nation))
+(32 rows)
+
+
+dbt3=# set pg_plan_advice.advice='JOIN_ORDER(orders lineitem customer nation) HASH_JOIN(customer nation) NESTED_LOOP_PLAIN(lineitem)';
+SET
+dbt3=# explain (plan_advice, debug) SELECT                                                                                            
+    c_custkey,
+    c_name,
+    sum(l_extendedprice * (1 - l_discount)) AS revenue,
+    c_acctbal,
+    n_name,
+    c_address,
+    c_phone,
+    c_comment
+FROM
+    customer,
+    orders,
+    lineitem,
+    nation
+WHERE
+    c_custkey = o_custkey
+    AND l_orderkey = o_orderkey
+    AND o_orderdate >= DATE '1993-10-01'
+    AND o_orderdate < DATE '1993-10-01' + INTERVAL '3' MONTH
+    AND l_returnflag = 'R'
+    AND c_nationkey = n_nationkey
+GROUP BY
+    c_custkey,
+    c_name,
+    c_acctbal,
+    c_phone,
+    n_name,
+    c_address,
+    c_comment
+ORDER BY
+    revenue DESC;
+                                                                            QUERY PLAN                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=140363.27..140470.11 rows=42738 width=202)
+   Sort Key: (sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discount)))) DESC
+   Disabled Nodes: 0
+   Parallel Safe: false
+   Plan Node ID: 0
+   ->  GroupAggregate  (cost=126791.53..132837.52 rows=42738 width=202)
+         Group Key: customer.c_custkey, nation.n_name
+         Disabled Nodes: 0
+         Parallel Safe: false
+         Plan Node ID: 1
+         ->  Gather Merge  (cost=126791.53..131769.07 rows=42738 width=182)
+               Workers Planned: 2
+               Disabled Nodes: 0
+               Parallel Safe: false
+               Plan Node ID: 2
+               ->  Sort  (cost=125791.50..125836.02 rows=17808 width=182)
+                     Sort Key: customer.c_custkey, nation.n_name
+                     Disabled Nodes: 0
+                     Parallel Safe: true
+                     Plan Node ID: 3
+                     extParam: 1
+                     allParam: 1
+                     ->  Nested Loop  (cost=4344.09..124534.24 rows=17808 width=182)
+                           Disabled Nodes: 0
+                           Parallel Safe: true
+                           Plan Node ID: 4
+                           extParam: 1
+                           allParam: 1
+                           ->  Hash Join  (cost=4343.66..22646.48 rows=12475 width=178)
+                                 Hash Cond: (customer.c_nationkey = nation.n_nationkey)
+                                 Disabled Nodes: 0
+                                 Parallel Safe: true
+                                 Plan Node ID: 5
+                                 extParam: 1
+                                 allParam: 1
+                                 ->  Parallel Hash Join  (cost=4342.10..22606.62 rows=12475 width=156)
+                                       Hash Cond: (orders.o_custkey = customer.c_custkey)
+                                       Disabled Nodes: 0
+                                       Parallel Safe: true
+                                       Plan Node ID: 6
+                                       extParam: 1
+                                       allParam: 1
+                                       ->  Parallel Seq Scan on orders  (cost=0.00..18231.78 rows=12475 width=12)
+                                             Filter: ((o_orderdate >= '1993-10-01'::date) AND (o_orderdate < '1994-01-01 00:00:00'::timestamp without time zone))
+                                             Disabled Nodes: 0
+                                             Parallel Safe: true
+                                             Plan Node ID: 7
+                                             extParam: 1
+                                             allParam: 1
+                                       ->  Parallel Hash  (cost=3489.82..3489.82 rows=68182 width=148)
+                                             Disabled Nodes: 0
+                                             Parallel Safe: true
+                                             Plan Node ID: 8
+                                             extParam: 1
+                                             allParam: 1
+                                             ->  Parallel Seq Scan on customer  (cost=0.00..3489.82 rows=68182 width=148)
+                                                   Disabled Nodes: 0
+                                                   Parallel Safe: true
+                                                   Plan Node ID: 9
+                                                   extParam: 1
+                                                   allParam: 1
+                                 ->  Hash  (cost=1.25..1.25 rows=25 width=30)
+                                       Disabled Nodes: 0
+                                       Parallel Safe: true
+                                       Plan Node ID: 10
+                                       ->  Seq Scan on nation  (cost=0.00..1.25 rows=25 width=30)
+                                             Disabled Nodes: 0
+                                             Parallel Safe: true
+                                             Plan Node ID: 11
+                           ->  Index Scan using lineitem_l_orderkey_idx_l_returnflag on lineitem  (cost=0.43..8.14 rows=3 width=20)
+                                 Index Cond: (l_orderkey = orders.o_orderkey)
+                                 Disabled Nodes: 0
+                                 Parallel Safe: true
+                                 Plan Node ID: 12
+                                 extParam: 0
+                                 allParam: 0
+ Supplied Plan Advice:
+   JOIN_ORDER(orders lineitem customer nation) /* matched, conflicting, failed */
+   HASH_JOIN(customer) /* matched, conflicting */
+   HASH_JOIN(nation) /* matched, conflicting */
+   NESTED_LOOP_PLAIN(lineitem) /* matched, conflicting */
+ Generated Plan Advice:
+   JOIN_ORDER(orders customer nation lineitem)
+   NESTED_LOOP_PLAIN(lineitem)
+   HASH_JOIN(customer nation)
+   SEQ_SCAN(orders customer nation)
+   INDEX_SCAN(lineitem public.lineitem_l_orderkey_idx_l_returnflag)
+   GATHER_MERGE((customer orders lineitem nation))
+ PlannedStmt:
+   Command Type: select
+   Flags: canSetTag, parallelModeNeeded
+   Subplans Needing Rewind: none
+   Relation OIDs: 16421 16434 16448 16469
+   Executor Parameter Types: 20 0
+   Parse Location: 0 to end
+
