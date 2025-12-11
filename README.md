@@ -5,12 +5,14 @@ and feed them back to the pg_plan_advice and see which one were used and which c
 be used due to some conflict/incapability/duplicates or bugs if any.
 
 prepare:
-createdb dbt3
-bunzip2 dbt3_tpch_1GB.sql.bz2
-import dbt3_tpch_1GB_dump to dbt3 postgresdb using pg_restore
-alter system set shared_preload_libraries = 'pg_plan_advice';
-pg_ctl restart
+* createdb dbt3  
+* bunzip2 dbt3_tpch_1GB_dump files
+* import dbt3_tpch_1GB_dump to dbt3 postgresdb using pg_restore  
+* alter system set shared_preload_libraries = 'pg_plan_advice';
+* pg_ctl restart
 
-The below will try to find advices that were not found
+# Run
+
+The below will try to find advices that couldn't be used(?)
 run: ./analyzeit.sh 
 
