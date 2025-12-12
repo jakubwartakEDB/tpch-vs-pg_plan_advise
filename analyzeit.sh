@@ -2,8 +2,8 @@
 
 # to run just one qXX, uncomment the next line, results will be in /tmp/advice
 # and /tmp/result
-#for F in `ls -1 q*.sql | sort -n`; do
-for F in q10.sql; do
+for F in `ls -1 q*.sql | sort -n`; do
+#for F in q10.sql; do
 	echo $F;
 
 	# get advice from explain
