@@ -16,3 +16,12 @@ prepare:
 The below will try to find advices that couldn't be used(?)
 run: ./analyzeit.sh 
 
+
+# TPC-H Queries
+
+This repository contains SQL queries derived from the TPC-H benchmark:
+* These queries are derived from the TPC-H™ Benchmark and do not contain any
+benchmark or runtime results.
+* TPC-H and TPC are trademarks of the Transaction Processing Performance Council.
+* This repository is for educational/functional testing and research purposes only.
+
