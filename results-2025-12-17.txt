@@ -1,0 +1,27 @@
+q10.sql
+	JOIN_ORDER(orders lineitem customer nation) /* matched, conflicting, failed */
+q11.sql
+q12.sql
+q13.sql
+	NO_GATHER(c_orders) /* not matched */
+q14.sql
+q15.sql
+	NO_GATHER(revenue0@expr_1) /* not matched */
+q16.sql
+q17.sql
+q18.sql
+q19.sql
+q1.sql
+q20.sql
+	NESTED_LOOP_MATERIALIZE(partsupp) /* matched, conflicting, failed */
+q21.sql
+q22.sql
+q2.sql
+	HASH_JOIN((partsupp region)) /* partially matched, conflicting */
+q3.sql
+q4.sql
+q5.sql
+q6.sql
+q7.sql
+q8.sql
+q9.sql
